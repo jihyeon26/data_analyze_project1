@@ -44,23 +44,23 @@ def get_k_neighbors(user_id, rating_data, k):
     # Sort data by distance column
     distance_data = distance_data[np.argsort(distance_data[:, -1])]
     
-    # 가장 가까운 k개의 행만 리턴한다 + 마지막(거리) 열은 제외한다
+    # Returns only the k closest rows. + exclude the last (distance) column
     return distance_data[:k, :-1]
     
 def predict_user_rating(rating_data, k, user_id, movie_id,):
-    """예측 행렬에 따라 유저의 영화 평점 예측 값 구하기"""
-    # movie_id 번째 영화를 보지 않은 유저를 데이터에서 미리 제외시킨다
+    """Predict a user's movie rating based on a prediction matrix"""
+    # Pre-exclude users who haven't watched 'movie_id' movie from the data
     filtered_data = filter_users_without_movie(rating_data, movie_id)
-    # 빈값들이 채워진 새로운 행렬을 만든다
+    # Create a new matrix filled with empty values
     filled_data = fill_nan_with_user_mean(filtered_data)
-    # 유저 user_id와 비슷한 k개의 유저 데이터를 찾는다
+    # Find the data of k users similar to user user_id
     neighbors = get_k_neighbors(user_id, filled_data, k)
 
     return np.mean(neighbors[:, movie_id])
     
     
-# 테스트 코드
-# 평점 데이터를 불러온다
+# test code
+# Retrieve rating data
 rating_data = pd.read_csv(RATING_DATA_PATH, index_col='user_id').values
-# 5개의 이웃들을 써서 유저 0의 영화 3에 대한 예측
+# Predict User 0's rating for Movie 3 using 5 neighbors
 print(predict_user_rating(rating_data, 5, 0, 3))
