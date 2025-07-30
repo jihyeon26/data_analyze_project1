@@ -10,9 +10,7 @@ import plotly.express as px
 spacex_df = pd.read_csv("spacex_launch_dash.csv")
 max_payload = spacex_df['Payload Mass (kg)'].max()
 min_payload = spacex_df['Payload Mass (kg)'].min()
-
-df= pd.read_csv("spacex_launch_dash.csv")
-launch_sites = df['Launch Site'].unique().tolist()
+launch_sites = spacex_df['Launch Site'].unique().tolist()
 
 # Create a dash application
 app = dash.Dash(__name__)
@@ -48,6 +46,31 @@ app.layout = html.Div(children=[html.H1('SpaceX Launch Records Dashboard',
 
 # TASK 2:
 # Add a callback function for `site-dropdown` as input, `success-pie-chart` as output
+# Function decorator to specify function input and output
+@app.callback(Output(component_id='success-pie-chart', component_property='figure'),
+              Input(component_id='site-dropdown', component_property='value'))
+def get_pie_chart(entered_site):
+    
+    if entered_site == 'ALL':
+        all_success_df = spacex_df[spacex_df['class']==1]
+        fig = px.pie(
+            all_success_df, 
+            names='Launch Site', 
+            title='Total Successful Launches by Site'
+        )
+        return fig
+    else:
+        # return the outcomes piechart for a selected site
+        filtered_df = spacex_df[spacex_df['Launch Site'] == entered_site]
+        class_counts = filtered_df['class'].value_counts().reset_index()
+        class_counts.columns = ['class', 'count']
+        fig = px.pie(
+            class_counts, 
+            names='class', 
+            values='count',
+            title=f'Total Success vs. Failure for {entered_site}'
+        )
+        return fig
 
 # TASK 4:
 # Add a callback function for `site-dropdown` and `payload-slider` as inputs, `success-payload-scatter-chart` as output
